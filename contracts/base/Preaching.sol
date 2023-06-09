@@ -13,18 +13,18 @@ abstract contract Preaching {
     struct Info {
         uint depth;
         uint[] inviteProportion;
-        uint baseProportion;
         uint gratitudeProportion;
         mapping(uint => uint) levelProportion;
     }
 
+    uint private immutable _baseProportion = 10000;
     Info public pInfo;
 
     struct Player{
         uint level;
         uint totalInvested;
         uint totalplayer;
-        uint rewardGratitude;
+        uint rewardGratitude;       
         uint rewardPayedGratitude;
         uint rewardLevel;
         uint rewardPayedLevel;
@@ -55,7 +55,6 @@ abstract contract Preaching {
     constructor(uint depth_) {
         pInfo.depth = depth_;
         pInfo.gratitudeProportion = 100;
-        pInfo.baseProportion = 10000;
         pInfo.inviteProportion.push(2500);
         pInfo.inviteProportion.push(1500);
         experience.set(20000e18, 2);
@@ -83,6 +82,7 @@ abstract contract Preaching {
         }
         players[account].referral = referral;
         players[referral].referrals.push(account);
+        players[referral].totalplayer = players[referral].referrals.length;
     }
 
     function _updateReferralInvested(address account, uint amount, bool increase) internal {
@@ -141,12 +141,12 @@ abstract contract Preaching {
             if (addr == address(0)) return;
             if (_isInvestedMax(players[addr].referrals, invested)) continue;
             if (players[addr].level == level && gratitude > 0) {
-                players[addr].rewardGratitude += amount * pInfo.gratitudeProportion / pInfo.baseProportion;
+                players[addr].rewardGratitude += amount * pInfo.gratitudeProportion / _baseProportion;
                 gratitude--; 
             }
             if (players[addr].level > level) {
                 level = players[addr].level;
-                players[addr].rewardLevel += amount * pInfo.levelProportion[level] / pInfo.baseProportion;
+                players[addr].rewardLevel += amount * pInfo.levelProportion[level] / _baseProportion;
             } 
             
         }
@@ -167,7 +167,7 @@ abstract contract Preaching {
         for (uint i; i < pInfo.inviteProportion.length; i++) {
             addr = players[addr].referral;
             if(addr == address(0)) return;
-            income = amount * pInfo.inviteProportion[i] / pInfo.baseProportion;
+            income = amount * pInfo.inviteProportion[i] / _baseProportion;
             if (_invested(msg.sender) >= _invested(addr)) income = income *  _invested(addr) / _invested(msg.sender);
             players[addr].rewardInvite += income;
         }

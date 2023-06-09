@@ -1,20 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 pragma solidity ^0.8.0;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import "@openzeppelin/contracts/token/ERC20/utils/SafeERC20.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
-import "./interfaces/IStakingRewards.sol";
+import "../interfaces/IStakingRewards.sol";
 
-contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
-    using SafeERC20 for IERC20;
+abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
 
     /* ========== STATE VARIABLES ========== */
-    address manager;
-    IERC20 public rewardsToken;
-    IERC20 public stakingToken;
     uint256 periodFinish = 0;
     uint256 public rewardRate = 1;
     uint256 public lastUpdateTime;
@@ -26,16 +20,10 @@ contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
 
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
+    
 
     /* ========== CONSTRUCTOR ========== */
 
-    constructor(
-        address _rewardsToken,
-        address _stakingToken
-    ) {
-        rewardsToken = IERC20(_rewardsToken);
-        stakingToken = IERC20(_stakingToken);
-    }
 
     /* ========== MODIFIERS ========== */
 
@@ -76,11 +64,13 @@ contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
 
     /* ========== VIEWS ========== */
 
-    function totalSupply() external view returns (uint256) {
+    function _sendReward(address to, uint amount) internal virtual;
+
+    function totalSupply() external view virtual returns (uint256) {
         return _totalSupply;
     }
 
-    function balanceOf(address account) external view returns (uint256) {
+    function balanceOf(address account) external view virtual returns (uint256) {
         return _balances[account];
     }
 
@@ -103,19 +93,17 @@ contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
-    function stake(uint256 amount) external nonReentrant updateReward(msg.sender) {
+    function _stake(uint256 amount) internal nonReentrant updateReward(msg.sender) {
         require(amount > 0, "Cannot stake 0");
         _totalSupply = _totalSupply + amount;
         _balances[msg.sender] = _balances[msg.sender] + amount;
-        stakingToken.safeTransferFrom(msg.sender, manager, amount);
         emit Staked(msg.sender, amount);
     }
 
-    function withdraw(uint256 amount) public nonReentrant updateReward(msg.sender) {
+    function _withdraw(uint256 amount) internal nonReentrant updateReward(msg.sender) {
         require(amount > 0, "Cannot withdraw 0");
         _totalSupply = _totalSupply - amount;
         _balances[msg.sender] = _balances[msg.sender] - amount;
-        stakingToken.safeTransferFrom(manager, msg.sender, amount);
         emit Withdrawn(msg.sender, amount);
     }
 
@@ -124,14 +112,14 @@ contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
         if (reward > 0) {
             rewards[msg.sender] = 0;
             payed += reward;
-            rewardsToken.safeTransferFrom(manager, msg.sender, reward);
+            _sendReward(msg.sender, reward);
             emit RewardPaid(msg.sender, reward);
         }
         rewardRate = reduceProduction(rewardRate, payed);
     }
 
-    function exit() external {
-        withdraw(_balances[msg.sender]);
+    function exit() public virtual {
+        _withdraw(_balances[msg.sender]);
         getReward();
     }
 
