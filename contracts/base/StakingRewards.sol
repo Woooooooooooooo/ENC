@@ -75,7 +75,7 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
     }
 
     function lastTimeRewardApplicable() public view returns (uint256) {
-        return block.timestamp < periodFinish ? block.timestamp : periodFinish;
+        return periodFinish == 0 || block.timestamp < periodFinish ? block.timestamp : periodFinish;
     }
 
     function rewardPerToken() public view returns (uint256) {
