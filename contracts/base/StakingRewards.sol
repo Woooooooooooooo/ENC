@@ -45,13 +45,12 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
         if (oldTotal == newTotal && oldRate == newRate) {
             return;
         }
-        if (newTotal == 0) {
-            periodFinish = 0;
+        if (newTotal == 0 && periodFinish != 0) {
             jackpot = (periodFinish - block.timestamp) * oldRate * oldTotal;
-        }
-        if (periodFinish == 0) {
-            periodFinish =  jackpot / oldRate / newTotal * 30 days + block.timestamp;
-        } else {
+            periodFinish = 0;
+        } else if (periodFinish == 0) {
+            periodFinish = jackpot / oldRate / newTotal * 30 days + block.timestamp;
+        } else if (periodFinish != 0) {
             periodFinish = (periodFinish - block.timestamp) * oldRate * oldTotal / newRate / newTotal + block.timestamp;
         }
     }

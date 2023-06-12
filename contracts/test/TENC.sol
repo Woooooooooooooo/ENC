@@ -63,13 +63,14 @@ contract TENC is StakingRewards{
         _withdraw(stakeAmount3 + stakeAmount5);
     }
 
-    function _sumUnlockAmount(uint year, address account) internal view returns (uint unlockAmount, uint stakeAmount) {
+    function _sumUnlockAmount(uint year, address account) internal returns (uint unlockAmount, uint stakeAmount) {
         EnumerableMap.UintToUintMap storage map = _lockLog[account][year];
         uint[] memory keys = map.keys();
         for (uint i; i < keys.length; i++) {
             if (keys[i] < block.timestamp) {
                 unlockAmount += map.get(keys[i]);
                 stakeAmount += map.get(keys[i]) * proportion[year] / _baseProportion;
+                map.remove(keys[i]);
             }
         }
     }

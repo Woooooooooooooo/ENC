@@ -20,12 +20,15 @@ contract ENC is StakingRewards{
     IERC20 outputToken;
     
     mapping(uint => uint) public proportion;
+    mapping(uint => uint) private _lockDate;
     mapping(address => uint256) private _balances;
     mapping(address => mapping(uint => EnumerableMap.UintToUintMap)) private _lockLog;
 
     constructor() {
         proportion[3] = 10700;
         proportion[5] = 10800;
+        _lockDate[5] = 5 * 365 days;
+        _lockDate[3] = 3 * 365 days;
     }
 
     function _transferFrom(IERC20 token, address from, address to, uint amount) internal {
@@ -57,19 +60,20 @@ contract ENC is StakingRewards{
     function withdraw() external{
         (uint unlockAmonut3, uint stakeAmount3)= _sumUnlockAmount(3, msg.sender);
         (uint unlockAmonut5, uint stakeAmount5) = _sumUnlockAmount(5, msg.sender);
+        _withdraw(stakeAmount3 + stakeAmount5);
+        _transferFrom(inputToken, address(this), msg.sender, unlockAmonut5 + unlockAmonut3);
         _balances[msg.sender] -= unlockAmonut5 + unlockAmonut3;
         _total -= unlockAmonut5 + unlockAmonut3;
-        _transferFrom(inputToken, address(this), msg.sender, unlockAmonut5 + unlockAmonut3);
-        _withdraw(stakeAmount3 + stakeAmount5);
     }
 
-    function _sumUnlockAmount(uint year, address account) internal view returns (uint unlockAmount, uint stakeAmount) {
+    function _sumUnlockAmount(uint year, address account) internal returns (uint unlockAmount, uint stakeAmount) {
         EnumerableMap.UintToUintMap storage map = _lockLog[account][year];
         uint[] memory keys = map.keys();
         for (uint i; i < keys.length; i++) {
-            if (keys[i] < block.timestamp) {
+            if (keys[i] <= block.timestamp) {
                 unlockAmount += map.get(keys[i]);
                 stakeAmount += map.get(keys[i]) * proportion[year] / _baseProportion;
+                map.remove(keys[i]);
             }
         }
     }
@@ -78,7 +82,7 @@ contract ENC is StakingRewards{
         _total += amount; 
         _balances[msg.sender] += amount;
         require(!_lockLog[msg.sender][year].contains(block.timestamp), "error");
-        _lockLog[msg.sender][year].set(block.timestamp, amount);
+        _lockLog[msg.sender][year].set(block.timestamp + _lockDate[year], amount);
         _stake(amount * proportion[year] / _baseProportion);
         _transferFrom(inputToken, msg.sender, address(this), amount);
     }
