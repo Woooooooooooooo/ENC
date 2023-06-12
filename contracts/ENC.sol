@@ -57,6 +57,8 @@ contract ENC is StakingRewards{
     function withdraw() external{
         (uint unlockAmonut3, uint stakeAmount3)= _sumUnlockAmount(3, msg.sender);
         (uint unlockAmonut5, uint stakeAmount5) = _sumUnlockAmount(5, msg.sender);
+        _balances[msg.sender] -= unlockAmonut5 + unlockAmonut3;
+        _total -= unlockAmonut5 + unlockAmonut3;
         _transferFrom(inputToken, address(this), msg.sender, unlockAmonut5 + unlockAmonut3);
         _withdraw(stakeAmount3 + stakeAmount5);
     }

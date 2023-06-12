@@ -14,6 +14,7 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
     uint256 public payed;
+    uint256 public jackpot = 300000000e18;
 
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
@@ -44,8 +45,12 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
         if (oldTotal == newTotal && oldRate == newRate) {
             return;
         }
+        if (newTotal == 0) {
+            periodFinish = 0;
+            jackpot = (periodFinish - block.timestamp) * oldRate * oldTotal;
+        }
         if (periodFinish == 0) {
-            periodFinish = 300000000e18 / oldRate / newTotal + block.timestamp;
+            periodFinish =  jackpot / oldRate / newTotal * 30 days + block.timestamp;
         } else {
             periodFinish = (periodFinish - block.timestamp) * oldRate * oldTotal / newRate / newTotal + block.timestamp;
         }
