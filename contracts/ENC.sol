@@ -54,10 +54,11 @@ contract ENC is StakingRewards{
     }
 
     function exit() public override {
-        super.exit();
+        withdraw();
+        getReward();
     }
 
-    function withdraw() external{
+    function withdraw() public {
         (uint unlockAmonut3, uint stakeAmount3)= _sumUnlockAmount(3, msg.sender);
         (uint unlockAmonut5, uint stakeAmount5) = _sumUnlockAmount(5, msg.sender);
         _withdraw(stakeAmount3 + stakeAmount5);
