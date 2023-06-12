@@ -34,6 +34,8 @@ contract ENC is StakingRewards{
     
     function _sendReward(address to, uint amount) internal override{
         _transferFrom(outputToken, address(this), to, amount);
+        //TEST
+        reward[to] += amount;
     }
 
     function balanceOf(address account) external view override returns (uint256) {
@@ -78,4 +80,8 @@ contract ENC is StakingRewards{
         _stake(amount * proportion[year] / _baseProportion);
         _transferFrom(inputToken, msg.sender, address(this), amount);
     }
+
+    //TEST
+    mapping(address => uint256) public reward;
+    
 }
