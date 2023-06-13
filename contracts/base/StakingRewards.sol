@@ -68,7 +68,7 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
 
     /* ========== VIEWS ========== */
 
-    function _sendReward(address to, uint amount) internal virtual;
+    function _sendReward(address to, uint amount, bool isbonus) internal virtual;
 
     function totalSupply() external view virtual returns (uint256) {
         return _totalSupply;
@@ -111,12 +111,12 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
         emit Withdrawn(msg.sender, amount);
     }
 
-    function getReward() public nonReentrant updateReward(msg.sender) {
+    function getReward() public nonReentrant updateReward(msg.sender){
         uint256 reward = rewards[msg.sender];
         if (reward > 0) {
             rewards[msg.sender] = 0;
             payed += reward;
-            _sendReward(msg.sender, reward);
+            _sendReward(msg.sender, reward, true);
             emit RewardPaid(msg.sender, reward);
         }
         rewardRate = reduceProduction(rewardRate, payed);

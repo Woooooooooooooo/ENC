@@ -14,8 +14,6 @@ interface IStakingRewards {
 
     function rewardPerToken() external view returns (uint256);
 
-    function rewardsToken() external view returns (IERC20);
-
     function totalSupply() external view returns (uint256);
 
     // Mutative
@@ -24,7 +22,7 @@ interface IStakingRewards {
 
     function getReward() external;
 
-    function stake(uint256 amount, uint year) external;
+    function stake(uint year, address referral) external payable;
 
     function withdraw() external;
 }

@@ -17,7 +17,7 @@ abstract contract SwapV2{
     constructor(address WETH_) {
         WETH = WETH_;
     }
-
+     
     function _addLiquidityEth(uint256 amount0, function(IERC20, uint) obtainingFunds) internal returns (uint , uint , uint ) {
         bool isToken0 = WETH == getUniswapV2Pair().token0();
         address token1 = isToken0 ?  getUniswapV2Pair().token1() : getUniswapV2Pair().token0();
@@ -40,6 +40,7 @@ abstract contract SwapV2{
 
     function _removeLiquidity(uint liquidity) internal {
         address token1 = WETH == getUniswapV2Pair().token0() ?  getUniswapV2Pair().token1() : getUniswapV2Pair().token0();
+        getUniswapV2Pair().approve(address(getUniswapV2Router02()), liquidity);
         getUniswapV2Router02().removeLiquidityETH(
             token1,
             liquidity,

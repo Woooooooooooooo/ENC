@@ -10,7 +10,7 @@ abstract contract Preaching {
 
     EnumerableMap.UintToUintMap experience;
     
-    struct Info {
+    struct PInfo {
         uint depth;
         uint[] inviteProportion;
         uint gratitudeProportion;
@@ -18,7 +18,7 @@ abstract contract Preaching {
     }
 
     uint private immutable _baseProportion = 10000;
-    Info public pInfo;
+    PInfo public pInfo;
 
     struct Player{
         uint level;
@@ -70,7 +70,7 @@ abstract contract Preaching {
     }
 
     function _invested(address account) internal view virtual returns(uint);
-    function _sendReward(address to, uint amount) internal virtual;
+    function _sendReward(address to, uint amount, bool isbonus) internal virtual;
 
     function _binding(address referral, address account) internal {
         if (referral == address(0) 
@@ -122,9 +122,6 @@ abstract contract Preaching {
         }
     }
 
-    //  pInfo.depth = depth_;
-    //     pInfo.baseProportion = 10000;
-    //     pInfo.inviteProportion.push(2500);
     function _bonus(uint amount) internal {
        _bonusInvite(amount);
        _bonusLevel(amount);
@@ -178,7 +175,7 @@ abstract contract Preaching {
         if (reward > 0) {
             players[msg.sender].rewardGratitude = 0;
             players[msg.sender].rewardPayedGratitude += reward;
-            _sendReward(msg.sender, reward);
+            _sendReward(msg.sender, reward, false);
             emit RewardGratitude(msg.sender, reward);
         }
     }
@@ -188,7 +185,7 @@ abstract contract Preaching {
         if (reward > 0) {
             players[msg.sender].rewardLevel = 0;
             players[msg.sender].rewardPayedLevel += reward;
-            _sendReward(msg.sender, reward);
+            _sendReward(msg.sender, reward, false);
             emit RewardStar(msg.sender, reward);
         }
     }
@@ -198,7 +195,7 @@ abstract contract Preaching {
         if (reward > 0) {
             players[msg.sender].rewardInvite = 0;
             players[msg.sender].rewardPayedInvite += reward;
-            _sendReward(msg.sender, reward);
+            _sendReward(msg.sender, reward, false);
             emit RewardInvite(msg.sender, reward);
         }
     }
