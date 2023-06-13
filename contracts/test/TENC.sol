@@ -29,7 +29,7 @@ contract TENC is StakingRewards{
     }
 
     function _transferFrom(IERC20 token, address from, address to, uint amount) internal {
-        token.transferFrom(from, to, amount);
+       // token.transferFrom(from, to, amount);
     }
     
     function _sendReward(address to, uint amount) internal override{
