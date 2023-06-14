@@ -16,7 +16,7 @@ contract TPreaching is Preaching{
     function _invested(address account) internal view override returns(uint) {
         return balance[account];
     }
-    function _sendReward(address to, uint amount) internal override {
+    function _sendReward(address to, uint amount, bool isbonus) internal override {
         reward[to] += amount;
     }
 

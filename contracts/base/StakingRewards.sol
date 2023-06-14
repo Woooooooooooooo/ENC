@@ -5,8 +5,9 @@ import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 
 import "../interfaces/IStakingRewards.sol";
+import "./BaseParam.sol";
 
-abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
+abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, BaseParam, Ownable{
 
     /* ========== STATE VARIABLES ========== */
     uint256 periodFinish = 0;
@@ -14,7 +15,7 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
     uint256 public payed;
-    uint256 public jackpot = 300000000e18;
+    uint256 public jackpot;
 
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
@@ -24,7 +25,9 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
     
 
     /* ========== CONSTRUCTOR ========== */
-
+    constructor () {
+        jackpot = 300000000 * _baseProportion;
+    }
 
     /* ========== MODIFIERS ========== */
 
@@ -135,7 +138,7 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, Ownable{
     }
 
     function reduceProduction(uint256 rewardRat_, uint production) internal pure returns(uint) {
-        uint[10] memory limit = [uint(3000000e18), 6000000e18, 9000000e18, 12000000e18, 15000000e18, 30000000e18, 60000000e18, 90000000e18, 120000000e18, 200000000e18];
+        uint[10] memory limit = [uint(3000000 * _baseProportion), 6000000 * _baseProportion, 9000000 * _baseProportion, 12000000 * _baseProportion, 15000000 * _baseProportion, 30000000 * _baseProportion, 60000000 * _baseProportion, 90000000 * _baseProportion, 120000000 * _baseProportion, 200000000 * _baseProportion];
         uint powerNum;
         for (uint i; i < limit.length; i++) {
             if (production / limit[1] > 0) {

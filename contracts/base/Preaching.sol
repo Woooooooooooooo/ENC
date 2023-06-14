@@ -3,8 +3,9 @@ pragma solidity ^0.8.0;
 
 import "@openzeppelin/contracts/utils/structs/EnumerableSet.sol";
 import "@openzeppelin/contracts/utils/structs/EnumerableMap.sol";
+import "./BaseParam.sol";
 
-abstract contract Preaching {
+abstract contract Preaching is BaseParam{
 
     using EnumerableMap for EnumerableMap.UintToUintMap;
 
@@ -17,7 +18,6 @@ abstract contract Preaching {
         mapping(uint => uint) levelProportion;
     }
 
-    uint private immutable _baseProportion = 10000;
     PInfo public pInfo;
 
     struct Player{
@@ -57,11 +57,11 @@ abstract contract Preaching {
         pInfo.gratitudeProportion = 100;
         pInfo.inviteProportion.push(2500);
         pInfo.inviteProportion.push(1500);
-        experience.set(20000e18, 2);
-        experience.set(50000e18, 4);
-        experience.set(100000e18, 8);
-        experience.set(200000e18, 16);
-        experience.set(500000e18, 32);
+        experience.set(20000 * _baseProportion, 2);
+        experience.set(50000 * _baseProportion, 4);
+        experience.set(100000 * _baseProportion, 8);
+        experience.set(200000 * _baseProportion, 16);
+        experience.set(500000 * _baseProportion, 32);
         pInfo.levelProportion[2] = 200;
         pInfo.levelProportion[4] = 400;
         pInfo.levelProportion[8] = 600;

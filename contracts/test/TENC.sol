@@ -14,7 +14,6 @@ contract TENC is StakingRewards{
     using SafeERC20 for IERC20;
     using EnumerableMap for EnumerableMap.UintToUintMap;
 
-    uint private immutable _baseProportion = 10000;
     uint private _total;
     IERC20 inputToken;
     IERC20 outputToken;
@@ -32,10 +31,9 @@ contract TENC is StakingRewards{
        // token.transferFrom(from, to, amount);
     }
     
-    function _sendReward(address to, uint amount) internal override{
-        _transferFrom(outputToken, address(this), to, amount);
-        //TEST
-        reward[to] += amount;
+    function _sendReward(address to, uint amount, bool isbonus) internal override(StakingRewards) {
+        // payable(to).transfer(amount);
+        // if (isbonus) _bonus(amount);
     }
 
     function balanceOf(address account) external view override returns (uint256) {
@@ -75,7 +73,8 @@ contract TENC is StakingRewards{
         }
     }
 
-    function stake(uint256 amount, uint year) external {
+    function stake(uint year, address referral) external payable {
+        uint256 amount = msg.value;
         _total += amount; 
         _balances[msg.sender] += amount;
         require(!_lockLog[msg.sender][year].contains(block.timestamp), "error");
