@@ -17,6 +17,12 @@ abstract contract SwapV2{
     constructor(address WETH_) {
         WETH = WETH_;
     }
+
+    function needAmount(uint256 amount0) external view returns(uint amount) {
+        bool isToken0 = WETH == getUniswapV2Pair().token0();
+        (uint reserve0, uint reserve1,) = getUniswapV2Pair().getReserves();
+        amount = (isToken0 ? reserve1 / reserve0 : reserve0 / reserve1) * amount0;
+    }
      
     function _addLiquidityEth(uint256 amount0, function(IERC20, uint) obtainingFunds) internal returns (uint , uint , uint ) {
         bool isToken0 = WETH == getUniswapV2Pair().token0();
