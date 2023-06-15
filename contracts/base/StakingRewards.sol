@@ -49,12 +49,12 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, BaseParam,
             return;
         }
         if (newTotal == 0 && periodFinish != 0) {
-            jackpot = (periodFinish - block.timestamp) * oldRate * oldTotal;
+            jackpot =  (periodFinish > block.timestamp ? (periodFinish - block.timestamp) : 0) * oldRate * oldTotal;
             periodFinish = 0;
         } else if (periodFinish == 0) {
             periodFinish = jackpot / oldRate / newTotal * 30 days + block.timestamp;
         } else if (periodFinish != 0) {
-            periodFinish = (periodFinish - block.timestamp) * oldRate * oldTotal / newRate / newTotal + block.timestamp;
+            periodFinish =  (periodFinish > block.timestamp ? (periodFinish - block.timestamp) : 0) * oldRate * oldTotal / newRate / newTotal + block.timestamp;
         }
     }
 

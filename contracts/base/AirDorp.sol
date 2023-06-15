@@ -26,7 +26,7 @@ abstract contract AirDorp is BaseParam{
         uint rewardProportion;
         uint[] memory keys = _aProportion.keys();
         for (uint i; i < keys.length; i++) {
-            if (keys[i] >= amount) {
+            if (amount >= keys[i]) {
                 rewardProportion += _aProportion.get(keys[i]);
             }
         }

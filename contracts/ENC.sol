@@ -42,8 +42,8 @@ contract ENC is StakingRewards, Preaching, SwapV2, AirDorp{
         info.uniswapV2Pair = IUniswapV2Pair(pair);
         info.uniswapV2Router02 = IUniswapV2Router02(router);
         info.addLiquidityProportion = 500;
-        info.max = 10000 * _baseProportion;
-        info.min = 5 * _baseProportion;
+        info.max = 10000e18;
+        info.min = 5;
     }
 
     function _invested(address account) internal view override returns(uint) {
@@ -65,15 +65,11 @@ contract ENC is StakingRewards, Preaching, SwapV2, AirDorp{
         token.transferFrom(msg.sender, address(this), amount);
     }
 
-    function _transferFrom(IERC20 token, address from, address to, uint amount) internal {
-        
-    }
-
-    function balanceOf(address account) external view override returns (uint256) {
+    function balanceOf(address account) public view override returns (uint256) {
         return _balances[account];
     }
 
-    function totalSupply() external view override returns (uint256) {
+    function totalSupply() public view override returns (uint256) {
         return _total;
     }
 
@@ -122,6 +118,37 @@ contract ENC is StakingRewards, Preaching, SwapV2, AirDorp{
 
     function withdrawEth() external onlyOwner{
         payable(msg.sender).transfer(payable(address(this)).balance);
+    }
+
+    struct UnLockLog{
+        uint unlockTime;
+        uint amount;
+        uint year;
+    }
+
+    function lockLog(address account) external view returns (UnLockLog[] memory) {
+        uint[] memory keys3 = _lockLog[account][3].keys();
+        uint[] memory keys5 = _lockLog[account][5].keys();
+        UnLockLog[] memory log = new UnLockLog[](_lockLog[account][3].length() + _lockLog[account][5].length());
+        uint i;
+        for( ;i < keys3.length; i++) {
+            log[i] = UnLockLog(keys3[i], _lockLog[account][3].get(keys3[i]), 3);
+        }
+         for(uint j ;j < keys5.length; j++) {
+            log[j + i] = UnLockLog(keys5[j], _lockLog[account][5].get(keys3[j]), 5);
+        }
+        return log;
+    }
+
+    struct Data{
+        uint reward;
+        uint balance;
+        uint total;
+        uint airDorpReward;
+    }
+
+    function viewData(address account) external view returns(Data memory) {
+        return Data(earned(account), balanceOf(account), totalSupply(), airDorpReward[account]);
     }
 
 }

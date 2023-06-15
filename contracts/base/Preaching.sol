@@ -39,6 +39,7 @@ abstract contract Preaching is BaseParam{
     event RewardGratitude(address indexed account, uint amount);
     event RewardStar(address indexed account, uint amount);
     event RewardInvite(address indexed account, uint amount);
+    event Binding(address indexed referral, address indexed account, uint time);
 
     modifier changes() {
         uint beforeInvested = _invested(msg.sender);
@@ -83,6 +84,7 @@ abstract contract Preaching is BaseParam{
         players[account].referral = referral;
         players[referral].referrals.push(account);
         players[referral].totalplayer = players[referral].referrals.length;
+        emit Binding(referral, account, block.timestamp);
     }
 
     function _updateReferralInvested(address account, uint amount, bool increase) internal {
