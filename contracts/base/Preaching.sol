@@ -19,6 +19,7 @@ abstract contract Preaching is BaseParam{
     }
 
     PInfo public pInfo;
+    uint preachReward;
 
     struct Player{
         uint level;
@@ -56,13 +57,13 @@ abstract contract Preaching is BaseParam{
     constructor(uint depth_) {
         pInfo.depth = depth_;
         pInfo.gratitudeProportion = 100;
-        pInfo.inviteProportion.push(2500);
         pInfo.inviteProportion.push(1500);
-        experience.set(20000 * _baseProportion, 2);
-        experience.set(50000 * _baseProportion, 4);
-        experience.set(100000 * _baseProportion, 8);
-        experience.set(200000 * _baseProportion, 16);
-        experience.set(500000 * _baseProportion, 32);
+        pInfo.inviteProportion.push(2500);
+        experience.set(20000 * _baseDecimals, 2);
+        experience.set(50000 * _baseDecimals, 4);
+        experience.set(100000 * _baseDecimals, 8);
+        experience.set(200000 * _baseDecimals, 16);
+        experience.set(500000 * _baseDecimals, 32);
         pInfo.levelProportion[2] = 200;
         pInfo.levelProportion[4] = 400;
         pInfo.levelProportion[8] = 600;
@@ -73,18 +74,22 @@ abstract contract Preaching is BaseParam{
     function _invested(address account) internal view virtual returns(uint);
     function _sendReward(address to, uint amount, bool isbonus) internal virtual;
 
-    function _binding(address referral, address account) internal {
-        if (referral == address(0) 
-            || account == address(0)
-            || players[account].referral != address(0)
-            || players[account].totalInvested != 0
-            ) {
-            return;
-        }
+    function binding(address referral, address account) external {
+        require(referral != address(0) && account != address(0) && referral != account, 'param error');
+        require(_repeat(referral, account), 'Referral is duplicated');
         players[account].referral = referral;
         players[referral].referrals.push(account);
         players[referral].totalplayer = players[referral].referrals.length;
         emit Binding(referral, account, block.timestamp);
+    }
+
+    function _repeat(address referral, address account) internal view returns (bool) {
+        for(uint i = 0; i < pInfo.depth; i++) {
+            referral = players[referral].referral;
+            if (referral == address(0)) return true; 
+            if (referral == account) return false;
+        }
+        return true;
     }
 
     function _updateReferralInvested(address account, uint amount, bool increase) internal {
@@ -101,7 +106,15 @@ abstract contract Preaching is BaseParam{
     }
 
     function _updateLevel(address account) internal {
-        uint total; uint max; uint totalInvested;
+        uint total = _side(account);
+        if (total == 0) {
+            return;
+        }
+        players[account].level = _grading(total);
+    }
+
+    function _side(address account) internal view returns (uint total){
+        uint max; uint totalInvested;
         address[] memory referrals = players[account].referrals;
         for(uint i; i < referrals.length; i++) {
             totalInvested = players[referrals[i]].totalInvested;
@@ -109,10 +122,6 @@ abstract contract Preaching is BaseParam{
             total += totalInvested;
         }
         total -= max;
-        if (total == 0) {
-            return;
-        }
-        players[account].level = _grading(total);
     }
 
     function _grading(uint amount) internal view returns(uint level_){
@@ -138,16 +147,17 @@ abstract contract Preaching is BaseParam{
             invested = players[addr].totalInvested;
             addr = players[addr].referral;
             if (addr == address(0)) return;
-            if (_isInvestedMax(players[addr].referrals, invested)) continue;
+            if (_isInvestedMax(players[addr].referrals, invested)) {
+                if (players[addr].level > level) level = players[addr].level;
+                continue;
+            } 
             if (players[addr].level == level && gratitude > 0) {
                 players[addr].rewardGratitude += amount * pInfo.gratitudeProportion / _baseProportion;
                 gratitude--; 
-            }
-            if (players[addr].level > level) {
+            } else if (players[addr].level > level) {
                 level = players[addr].level;
                 players[addr].rewardLevel += amount * pInfo.levelProportion[level] / _baseProportion;
             } 
-            
         }
     }
 
@@ -177,6 +187,7 @@ abstract contract Preaching is BaseParam{
         if (reward > 0) {
             players[msg.sender].rewardGratitude = 0;
             players[msg.sender].rewardPayedGratitude += reward;
+            preachReward += reward;
             _sendReward(msg.sender, reward, false);
             emit RewardGratitude(msg.sender, reward);
         }
@@ -187,6 +198,7 @@ abstract contract Preaching is BaseParam{
         if (reward > 0) {
             players[msg.sender].rewardLevel = 0;
             players[msg.sender].rewardPayedLevel += reward;
+            preachReward += reward;
             _sendReward(msg.sender, reward, false);
             emit RewardStar(msg.sender, reward);
         }
@@ -197,9 +209,16 @@ abstract contract Preaching is BaseParam{
         if (reward > 0) {
             players[msg.sender].rewardInvite = 0;
             players[msg.sender].rewardPayedInvite += reward;
+            preachReward += reward;
             _sendReward(msg.sender, reward, false);
             emit RewardInvite(msg.sender, reward);
         }
+    }
+
+    function getBonus() public {
+        getRewardGratitude();
+        getRewardInvite();
+        getRewardStar();
     }
 
 }

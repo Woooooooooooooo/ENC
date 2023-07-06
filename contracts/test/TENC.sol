@@ -73,7 +73,7 @@ contract TENC is StakingRewards{
         }
     }
 
-    function stake(uint year, address referral) external payable {
+    function stake(uint year) external payable {
         uint256 amount = msg.value;
         _total += amount; 
         _balances[msg.sender] += amount;

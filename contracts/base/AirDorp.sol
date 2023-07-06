@@ -14,9 +14,9 @@ abstract contract AirDorp is BaseParam{
     mapping(address => uint) public airDorpReward;
 
     constructor() {
-        aTotal = 25000000 * _baseProportion;
-        _aProportion.set(1000 * _baseProportion, 600);
-        _aProportion.set(2000 * _baseProportion, 800 - 600);
+        aTotal = 25000000 * _baseDecimals;
+        _aProportion.set(1000 * _baseDecimals, 800);
+        _aProportion.set(2000 * _baseDecimals, 1000 - 800);
     }
 
     function _sendReward(address to, uint amount, bool isbonus) internal virtual;

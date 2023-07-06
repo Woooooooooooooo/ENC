@@ -10,8 +10,8 @@ import "./BaseParam.sol";
 abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, BaseParam, Ownable{
 
     /* ========== STATE VARIABLES ========== */
-    uint256 periodFinish = 0;
-    uint256 public rewardRate = 1;
+    uint256 public periodFinish = 0;
+    uint256 public rewardRate = 10000;
     uint256 public lastUpdateTime;
     uint256 public rewardPerTokenStored;
     uint256 public payed;
@@ -20,13 +20,13 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, BaseParam,
     mapping(address => uint256) public userRewardPerTokenPaid;
     mapping(address => uint256) public rewards;
 
-    uint256 private _totalSupply;
+    uint256 _totalSupply;
     mapping(address => uint256) private _balances;
     
 
     /* ========== CONSTRUCTOR ========== */
     constructor () {
-        jackpot = 300000000 * _baseProportion;
+        jackpot = 300000000 * _baseDecimals;
     }
 
     /* ========== MODIFIERS ========== */
@@ -48,13 +48,14 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, BaseParam,
         if (oldTotal == newTotal && oldRate == newRate) {
             return;
         }
-        if (newTotal == 0 && periodFinish != 0) {
-            jackpot =  (periodFinish > block.timestamp ? (periodFinish - block.timestamp) : 0) * oldRate * oldTotal;
+        if (periodFinish == 0) {
+            //jackpot / (newTotal / 30 days * (newRate / _baseProportion))
+            periodFinish = jackpot * 30 days * _baseProportion / newTotal / newRate  + block.timestamp;
+        } else if (periodFinish > block.timestamp && newTotal == 0) {
+            jackpot = (periodFinish - block.timestamp) * oldRate * oldTotal / 30 days / _baseProportion;
             periodFinish = 0;
-        } else if (periodFinish == 0) {
-            periodFinish = jackpot / oldRate / newTotal * 30 days + block.timestamp;
-        } else if (periodFinish != 0) {
-            periodFinish =  (periodFinish > block.timestamp ? (periodFinish - block.timestamp) : 0) * oldRate * oldTotal / newRate / newTotal + block.timestamp;
+        } else  if (periodFinish > block.timestamp) {
+            periodFinish = (periodFinish - block.timestamp) * oldRate * oldTotal  / newRate / newTotal + block.timestamp;
         }
     }
 
@@ -90,13 +91,13 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, BaseParam,
             return rewardPerTokenStored;
         }
         return
-            rewardPerTokenStored + ((lastTimeRewardApplicable() - lastUpdateTime) * rewardRate);
+            rewardPerTokenStored + ((lastTimeRewardApplicable() - lastUpdateTime) * 1e18 * rewardRate / _baseProportion / 30 days);
     }
 
     function earned(address account) public view returns (uint256) {
         return _balances[account] * (rewardPerToken() - userRewardPerTokenPaid[account]) / 1e18 + rewards[account];
     }
-
+    
 
     /* ========== MUTATIVE FUNCTIONS ========== */
 
@@ -130,15 +131,8 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, BaseParam,
         getReward();
     }
 
-    /* ========== RESTRICTED FUNCTIONS ========== */
-
-    function notifyRewardRate(uint256 rewardRat_) internal updateReward(address(0)) {
-        rewardRate = rewardRat_;
-        emit RewardRateUpdate(rewardRat_);
-    }
-
     function reduceProduction(uint256 rewardRat_, uint production) internal pure returns(uint) {
-        uint[10] memory limit = [uint(3000000 * _baseProportion), 6000000 * _baseProportion, 9000000 * _baseProportion, 12000000 * _baseProportion, 15000000 * _baseProportion, 30000000 * _baseProportion, 60000000 * _baseProportion, 90000000 * _baseProportion, 120000000 * _baseProportion, 200000000 * _baseProportion];
+        uint[10] memory limit = [uint(3000000 * _baseDecimals), 6000000 * _baseDecimals, 9000000 * _baseDecimals, 12000000 * _baseDecimals, 15000000 * _baseDecimals, 30000000 * _baseDecimals, 60000000 * _baseDecimals, 90000000 * _baseDecimals, 120000000 * _baseDecimals, 200000000 * _baseDecimals];
         uint powerNum;
         for (uint i; i < limit.length; i++) {
             if (production / limit[1] > 0) {

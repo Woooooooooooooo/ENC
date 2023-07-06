@@ -28,10 +28,6 @@ contract TPreaching is Preaching{
         balance[msg.sender] -= amount;
     }
 
-    function binding(address referral, address account) external {
-        _binding(referral, account);
-    }
-
     function bonus(uint amount) external {
         _bonus(amount);
     }
