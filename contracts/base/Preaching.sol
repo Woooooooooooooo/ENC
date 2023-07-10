@@ -65,10 +65,10 @@ abstract contract Preaching is BaseParam{
         experience.set(200000 * _baseDecimals, 16);
         experience.set(500000 * _baseDecimals, 32);
         pInfo.levelProportion[2] = 200;
-        pInfo.levelProportion[4] = 400;
-        pInfo.levelProportion[8] = 600;
-        pInfo.levelProportion[16] = 800;
-        pInfo.levelProportion[32] = 1000;
+        pInfo.levelProportion[4] = 200;
+        pInfo.levelProportion[8] = 200;
+        pInfo.levelProportion[16] = 200;
+        pInfo.levelProportion[32] = 200;
     }
 
     function _invested(address account) internal view virtual returns(uint);
@@ -128,7 +128,7 @@ abstract contract Preaching is BaseParam{
         uint256[] memory keys = experience.keys();
         for (uint i; i < keys.length; i++) {
             if (amount >= keys[i] && level_ < experience.get(keys[i])) {
-                level_ = experience.get(keys[i]);
+                level_ += experience.get(keys[i]);
             }
         }
     }
@@ -143,31 +143,31 @@ abstract contract Preaching is BaseParam{
         uint level = players[addr].level;
         uint invested;
         uint gratitude = 5;
+        uint residue = 62;
+        uint tempLevel;
         for (uint i; i < pInfo.depth; i++) {
             invested = players[addr].totalInvested;
             addr = players[addr].referral;
             if (addr == address(0)) return;
-            if (_isInvestedMax(players[addr].referrals, invested)) {
-                if (players[addr].level > level) level = players[addr].level;
-                continue;
-            } 
-            if (players[addr].level == level && gratitude > 0) {
+            if (players[addr].level == level && gratitude > 0 && level > 0) {
                 players[addr].rewardGratitude += amount * pInfo.gratitudeProportion / _baseProportion;
                 gratitude--; 
             } else if (players[addr].level > level) {
                 level = players[addr].level;
-                players[addr].rewardLevel += amount * pInfo.levelProportion[level] / _baseProportion;
+                tempLevel =  residue & level;
+                if (tempLevel == 0) continue;
+                residue -= tempLevel;
+                players[addr].rewardLevel += amount * _levelShare(tempLevel) / _baseProportion;
             } 
         }
     }
 
-    function _isInvestedMax(address[] storage account, uint amount) internal view returns(bool) {
-        for (uint i; i < account.length; i++) {
-            if (players[account[i]].totalInvested > amount) {
-                return false;
+    function _levelShare(uint level_) private view returns (uint proportion) {
+        for(uint i = 2; i <= 32; i *= 2) {
+            if (level_ & i > 0) {
+                proportion += pInfo.levelProportion[i];
             }
         }
-        return true;
     }
 
     function _bonusInvite(uint amount) internal {

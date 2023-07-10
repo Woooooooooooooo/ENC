@@ -23,6 +23,10 @@ abstract contract StakingRewards is IStakingRewards, ReentrancyGuard, BaseParam,
     uint256 _totalSupply;
     mapping(address => uint256) private _balances;
     
+    event Received(address, uint);
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
+    }
 
     /* ========== CONSTRUCTOR ========== */
     constructor () {

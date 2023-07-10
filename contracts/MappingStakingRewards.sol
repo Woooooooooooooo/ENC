@@ -24,9 +24,10 @@ contract MappingStakingRewards is ReentrancyGuard , Ownable {
     uint256 private _totalSupply;
     mapping(address => uint256) private _balances;
 
-    /* ========== CONSTRUCTOR ========== */
-
-   
+    event Received(address, uint);
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
+    }
 
     /* ========== VIEWS ========== */
 

@@ -208,7 +208,7 @@ contract ENC is StakingRewards, Preaching, SwapV2, AirDorp {
             Data(
                 earned(account),
                 balanceOf(account),
-                totalSupply(),
+                players[account].totalInvested,
                 airDorpReward[account],
                 players[account].level,
                 players[account].totalplayer,
