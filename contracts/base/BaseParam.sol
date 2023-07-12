@@ -5,7 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 
 contract BaseParam{
     
-    uint immutable _baseDecimals = 1e13;
+    uint immutable _baseDecimals = 1e18;
     uint immutable _baseProportion = 10000;
 
     struct BInfo {

@@ -1,11 +1,11 @@
-const ENC = artifacts.require("ENC");
+const ENC = artifacts.require("EMBinvite");
 
 module.exports = async function(deployer, network, accounts) {
 
     //goerli
-    let WETH = '0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6';
-    let pair = '0xfc9f48713f99064634b74b6f9137d05a9d1fe4ec';
-    let router = '0xEfF92A263d31888d860bD50809A8D171709b7b1c';
+    let WETH = '0x840f3c7e78b3F642fc5Be7BC9E866D660b0c549F';
+    let pair = '0x4229291b1c1EF8664249ddE88F6cF4dB651684cC';
+    let router = '0x95e2afe9d2A3Af21762A6C619b70836626B74c19';
     let receiver = '0x37A5Ec9D194F9d880F28cA28BF6dd75DC81951C3';
     await deployer.deploy(ENC, WETH, pair, router, receiver);
 
