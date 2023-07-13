@@ -9,9 +9,14 @@ contract TSwapV2 is SwapV2{
     IUniswapV2Pair uniswapV2Pair;
     IUniswapV2Router02 uniswapV2Router02;
 
-    constructor() SwapV2(0xB4FBF271143F4FBf7B91A5ded31805e42b2208d6) {
-        uniswapV2Pair = IUniswapV2Pair(0x16Fb57D796e8c4224aD30c343605F312271B6c57);
-        uniswapV2Router02 = IUniswapV2Router02(0xEfF92A263d31888d860bD50809A8D171709b7b1c);
+    constructor() SwapV2(0x840f3c7e78b3F642fc5Be7BC9E866D660b0c549F) {
+        uniswapV2Pair = IUniswapV2Pair(0x4229291b1c1EF8664249ddE88F6cF4dB651684cC);
+        uniswapV2Router02 = IUniswapV2Router02(0x95e2afe9d2A3Af21762A6C619b70836626B74c19);
+    }
+
+    event Received(address, uint);
+    receive() external payable {
+        emit Received(msg.sender, msg.value);
     }
 
     event AddLiquidity(uint amountA, uint amountB, uint liquidity);
@@ -28,7 +33,7 @@ contract TSwapV2 is SwapV2{
     }
 
     function addLiquidity() external payable {
-       (uint amountA, uint amountB, uint liquidity) = _addLiquidityEth(msg.value, obtainingFunds);
+       (uint amountA, uint amountB, uint liquidity) = _addLiquidityEth(msg.value / 20, obtainingFunds);
         emit AddLiquidity( amountA,  amountB,  liquidity);
    }
 
